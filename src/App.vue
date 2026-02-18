@@ -1,49 +1,16 @@
 <script setup>
-const primaryProject = {
-  title: 'Void Rift',
-  genre: 'Action RPG',
-  year: '2025',
-  desc: 'A dark sci-fi action RPG set in a fractured dimension where reality bends to the player\'s will. Built from the ground up with custom shaders, procedural world generation, and a narrative system that adapts to player choices.',
-  tags: ['Unity', 'C#', 'Shader Graph', 'Procedural Gen'],
+import { ref } from 'vue'
+import { projects, courses } from './data/projects.js'
+import MediaCarousel from './components/MediaCarousel.vue'
+
+const primaryProject = projects.find(p => p.tier === 'primary')
+const secondaryProjects = projects.filter(p => p.tier === 'secondary')
+
+const expandedProject = ref(null)
+
+function toggleHighlights(id) {
+  expandedProject.value = expandedProject.value === id ? null : id
 }
-
-const secondaryProjects = [
-  {
-    title: 'Iron Circuit',
-    genre: 'Strategy',
-    year: '2024',
-    desc: 'Tactical mech combat on procedurally generated arenas with deep customization systems.',
-    tags: ['Unreal Engine', 'C++', 'Blueprints'],
-  },
-  {
-    title: 'Ember Trails',
-    genre: 'Platformer',
-    year: '2023',
-    desc: 'A hand-painted 2D platformer about a fire spirit navigating a dying world.',
-    tags: ['Godot', 'GDScript', 'Pixel Art'],
-  },
-]
-
-const minorProjects = [
-  {
-    title: 'Neon Abyss Protocol',
-    genre: 'Roguelike',
-    year: '2023',
-    tags: ['Unity', 'C#'],
-  },
-  {
-    title: 'Hex Frontier',
-    genre: 'Turn-Based Strategy',
-    year: '2022',
-    tags: ['Godot', 'GDScript'],
-  },
-  {
-    title: 'Pulse',
-    genre: 'Rhythm / Arcade',
-    year: '2021',
-    tags: ['Unity', 'C#'],
-  },
-]
 </script>
 
 <template>
@@ -94,9 +61,7 @@ const minorProjects = [
           </div>
         </div>
         <div class="hero-photo">
-          <div class="photo-placeholder">
-            <span class="photo-initials">EF</span>
-          </div>
+          <img src="/media/main/avatar.jpg" alt="Egor — Faust" class="photo-avatar" />
         </div>
       </div>
     </section>
@@ -107,26 +72,34 @@ const minorProjects = [
         <h2 class="section-title">Projects</h2>
       </div>
 
-      <!-- Primary project — full width -->
+      <!-- Primary project — full width, Steam-style layout -->
       <article class="card card-primary">
-        <div class="card-thumb card-thumb--lg">
-          <div class="thumb-placeholder"><span class="thumb-icon">🎮</span></div>
-          <span class="card-badge">★ Primary</span>
+        <div class="card-media">
+          <MediaCarousel :media="primaryProject.media" :project-id="primaryProject.id" />
         </div>
         <div class="card-body card-body--lg">
           <div class="card-top">
-            <h3 class="card-title card-title--lg">{{ primaryProject.title }}</h3>
-            <span class="card-year">{{ primaryProject.year }}</span>
+            <h3 class="card-title card-title--lg">{{ primaryProject.name }}</h3>
+            <span class="card-hours">{{ primaryProject.timeSpent }} hrs</span>
           </div>
-          <p class="card-genre">{{ primaryProject.genre }}</p>
-          <p class="card-desc card-desc--lg">{{ primaryProject.desc }}</p>
+          <p class="card-genre">{{ primaryProject.genre }} · {{ primaryProject.perspective }}</p>
+          <p class="card-desc card-desc--lg">{{ primaryProject.description }}</p>
+          <p class="card-tech-detail">{{ primaryProject.techDetails }}</p>
           <div class="card-tags">
-            <span v-for="tag in primaryProject.tags" :key="tag" class="tag">{{ tag }}</span>
+            <span v-for="tag in primaryProject.technologies" :key="tag" class="tag">{{ tag }}</span>
           </div>
-          <div class="card-actions">
-            <button class="btn btn-primary">View Project</button>
-            <button class="btn btn-ghost">Watch Trailer</button>
+          <div v-if="primaryProject.frameworks.length" class="card-frameworks">
+            <span v-for="fw in primaryProject.frameworks" :key="fw" class="tag tag--fw">{{ fw }}</span>
           </div>
+          <button
+            class="btn btn-ghost btn--expand"
+            @click="toggleHighlights(primaryProject.id)"
+          >
+            {{ expandedProject === primaryProject.id ? '▾ Hide' : '▸ Show' }} Highlights ({{ primaryProject.highlights.length }})
+          </button>
+          <ul v-if="expandedProject === primaryProject.id" class="highlights-list">
+            <li v-for="h in primaryProject.highlights" :key="h">{{ h }}</li>
+          </ul>
         </div>
       </article>
 
@@ -134,50 +107,76 @@ const minorProjects = [
       <div class="grid-secondary">
         <article
           v-for="project in secondaryProjects"
-          :key="project.title"
+          :key="project.id"
           class="card"
         >
-          <div class="card-thumb">
-            <div class="thumb-placeholder"><span class="thumb-icon">🎮</span></div>
+          <div class="card-media">
+            <MediaCarousel :media="project.media" :project-id="project.id" />
           </div>
           <div class="card-body">
             <div class="card-top">
-              <h3 class="card-title">{{ project.title }}</h3>
-              <span class="card-year">{{ project.year }}</span>
+              <h3 class="card-title">{{ project.name }}</h3>
+              <span class="card-hours">{{ project.timeSpent }} hrs</span>
             </div>
-            <p class="card-genre">{{ project.genre }}</p>
-            <p class="card-desc">{{ project.desc }}</p>
+            <p class="card-genre">{{ project.genre }} · {{ project.perspective }}</p>
+            <p class="card-desc">{{ project.description }}</p>
+            <p class="card-tech-detail">{{ project.techDetails }}</p>
             <div class="card-tags">
-              <span v-for="tag in project.tags" :key="tag" class="tag">{{ tag }}</span>
+              <span v-for="tag in project.technologies" :key="tag" class="tag">{{ tag }}</span>
             </div>
+            <button
+              class="btn btn-ghost btn--expand"
+              @click="toggleHighlights(project.id)"
+            >
+              {{ expandedProject === project.id ? '▾ Hide' : '▸ Show' }} Highlights ({{ project.highlights.length }})
+            </button>
+            <ul v-if="expandedProject === project.id" class="highlights-list">
+              <li v-for="h in project.highlights" :key="h">{{ h }}</li>
+            </ul>
           </div>
         </article>
       </div>
+    </section>
 
-      <!-- Minor projects -->
-      <div class="minor-header">
-        <span class="minor-label">Other Projects</span>
-        <div class="minor-line"></div>
+    <!-- ─── COURSES ─── -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Courses & Certifications</h2>
       </div>
-
-      <div class="grid-minor">
-        <article
-          v-for="project in minorProjects"
-          :key="project.title"
-          class="card-minor"
-        >
-          <div class="minor-icon">◇</div>
-          <div class="minor-body">
-            <div class="minor-top">
-              <h4 class="minor-title">{{ project.title }}</h4>
-              <span class="minor-year">{{ project.year }}</span>
+      <template v-if="courses.length">
+        <div class="grid-courses">
+          <article v-for="course in courses" :key="course.id" class="course-card">
+            <div class="course-header">
+              <div class="course-header-text">
+                <h4 class="course-title">{{ course.title }}</h4>
+                <span class="course-author">{{ course.author }}</span>
+              </div>
+              <a
+                v-if="course.certificateUrl"
+                :href="course.certificateUrl"
+                download
+                class="udemy-badge"
+                title="Download Udemy Certificate"
+              >
+                <img src="/media/main/udemy-logo.webp" alt="Udemy" class="udemy-icon" />
+                <span class="udemy-label">Certificate</span>
+              </a>
             </div>
-            <p class="minor-genre">{{ project.genre }}</p>
-          </div>
-          <div class="minor-tags">
-            <span v-for="tag in project.tags" :key="tag" class="tag tag--sm">{{ tag }}</span>
-          </div>
-        </article>
+            <p class="course-overview">{{ course.overview }}</p>
+            <ul class="course-learned">
+              <li v-for="item in course.learned" :key="item">{{ item }}</li>
+            </ul>
+            <div class="course-footer">
+              <div class="course-tags">
+                <span v-for="tag in course.tags" :key="tag" class="tag tag--sm">{{ tag }}</span>
+              </div>
+              <a v-if="course.githubUrl" :href="course.githubUrl" target="_blank" class="btn btn-ghost btn--sm">GitHub</a>
+            </div>
+          </article>
+        </div>
+      </template>
+      <div v-else class="courses-placeholder">
+        <p>Course projects with GitHub links and certificates — coming next.</p>
       </div>
     </section>
 
@@ -378,22 +377,13 @@ const minorProjects = [
   flex-shrink: 0;
 }
 
-.photo-placeholder {
-  width: 140px;
-  height: 140px;
+.photo-avatar {
+  width: 350px;
+  height: 350px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
   border: 2px solid var(--border-default);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.photo-initials {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.05em;
+  object-fit: cover;
+  display: block;
 }
 
 /* ───────── SECTIONS ───────── */
@@ -472,38 +462,8 @@ const minorProjects = [
   transform: translateY(-2px);
 }
 
-.card-thumb {
-  position: relative;
-  height: 150px;
-  background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-surface) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.card-thumb--lg {
-  height: 220px;
-}
-
-.thumb-placeholder {
-  opacity: 0.2;
-}
-
-.thumb-icon {
-  font-size: 2.5rem;
-}
-
-.card-badge {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: var(--accent);
-  background: rgba(0, 0, 0, 0.65);
-  padding: 0.25rem 0.6rem;
-  border-radius: 3px;
-  letter-spacing: 0.04em;
+.card-media {
+  width: 100%;
 }
 
 .card-body {
@@ -531,10 +491,11 @@ const minorProjects = [
   font-size: 1.35rem;
 }
 
-.card-year {
+.card-hours {
   font-size: 0.72rem;
   color: var(--text-muted);
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .card-genre {
@@ -577,10 +538,55 @@ const minorProjects = [
   padding: 0.15rem 0.45rem;
 }
 
-.card-actions {
+.card-tech-detail {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 0.75rem;
+  font-style: italic;
+}
+
+.card-frameworks {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.tag--fw {
+  border-color: rgba(79, 195, 247, 0.15);
+  color: var(--text-secondary);
+}
+
+.btn--expand {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.85rem;
+}
+
+.highlights-list {
+  margin-top: 0.75rem;
+  padding-left: 1.1rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.highlights-list li {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  position: relative;
+  padding-left: 0.8rem;
+}
+
+.highlights-list li::before {
+  content: '▹';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-size: 0.7rem;
 }
 
 /* ───────── PRIMARY CARD ───────── */
@@ -601,90 +607,155 @@ const minorProjects = [
   margin-bottom: 2rem;
 }
 
-/* ───────── MINOR PROJECTS ───────── */
-.minor-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.minor-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.minor-line {
-  flex: 1;
-  height: 1px;
-  background: var(--border-subtle);
-}
-
-.grid-minor {
+/* ───────── COURSES ───────── */
+.grid-courses {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
-.card-minor {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
+.course-card {
+  padding: 1.25rem 1.5rem;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: 5px;
-  transition: border-color 0.15s, background 0.15s;
+  border-radius: 6px;
+  transition: border-color 0.15s;
 }
 
-.card-minor:hover {
+.course-card:hover {
   border-color: var(--border-default);
-  background: var(--bg-elevated);
 }
 
-.minor-icon {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  width: 1.25rem;
-  text-align: center;
+.course-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
 }
 
-.minor-body {
+.course-header-text {
   flex: 1;
   min-width: 0;
 }
 
-.minor-top {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
+.course-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.15rem;
 }
 
-.minor-title {
-  font-size: 0.85rem;
+.course-author {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.udemy-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.udemy-badge:hover {
+  border-color: var(--border-default);
+  background: var(--bg-hover);
+}
+
+.udemy-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.udemy-label {
+  font-size: 0.68rem;
   font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.course-overview {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.course-learned {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.course-learned li {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  position: relative;
+  padding-left: 0.85rem;
+}
+
+.course-learned li::before {
+  content: '▹';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-size: 0.65rem;
+}
+
+.course-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.course-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.btn--sm {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.7rem;
+  text-decoration: none;
+}
+
+.btn-subtle {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-subtle:hover {
+  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
-.minor-year {
-  font-size: 0.68rem;
+.courses-placeholder {
+  padding: 2rem;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-default);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.courses-placeholder p {
+  font-size: 0.85rem;
   color: var(--text-muted);
-}
-
-.minor-genre {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-}
-
-.minor-tags {
-  display: flex;
-  gap: 0.3rem;
-  flex-shrink: 0;
 }
 
 /* ───────── SKILLS PLACEHOLDER ───────── */
