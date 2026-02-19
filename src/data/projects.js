@@ -40,7 +40,9 @@ export const projects = [
       'EOS / Steam Online Subsystem',
     ],
     media: [
-      // { type: 'image', src: '/media/sinistrum/screen1.jpg', alt: 'Sinistrum — spaceship interior' },
+      { type: 'image', src: '/media/sinistrum/screenshot1.png', alt: 'Ritual site' },
+      { type: 'image', src: '/media/sinistrum/screenshot2.png', alt: 'Inventory' },
+      { type: 'image', src: '/media/sinistrum/screenshot3.png', alt: 'Possession' },
       // { type: 'video', src: '/media/sinistrum/trailer.mp4', poster: '/media/sinistrum/poster.jpg' },
     ],
   },
@@ -62,12 +64,11 @@ export const projects = [
       'C++ handles core logic and complex networked flows. Blueprints are used primarily for animations.',
     highlights: [
       'Physics-based interactions between players — grabbing, kicking, pushing',
-      'Custom implementation of grabbable rope physics with full network replication',
+      'Custom implementation of grabbable rope physics with network replication',
       'Replicated dynamic climbing system',
     ],
     frameworks: [],
     media: [
-      { type: 'image', src: '/media/jump-quest/screenshot1.jpg', alt: 'JumpQuest — Screenshot' },
       { type: 'video', src: '/media/jump-quest/JumpQuestRopeOverview.mp4', alt: 'JumpQuest — Rope Physics Overview' },
     ],
   },
@@ -189,3 +190,52 @@ export const courses = [
     tags: ['Unreal Engine 5', 'C++', 'GAS', 'AI', 'Blueprints'],
   },
 ]
+
+// Levels: 1 = Basic, 2 = Proficient, 3 = Advanced, 4 = Expert
+export const skills = [
+  {
+    category: 'Core Engine',
+    items: [
+      { name: 'C++ in Unreal Engine', level: 3, note: '800+ hrs in primary project, 5 completed courses' },
+      { name: 'Blueprints', level: 3, note: 'Used across all projects; hybrid C++/BP workflows' },
+      { name: 'Gameplay Framework', level: 3, note: 'Deep understanding from courses and multi-project experience' },
+    ],
+  },
+  {
+    category: 'Gameplay Systems',
+    items: [
+      { name: 'Gameplay Ability System (GAS)', level: 3, note: 'Dedicated course + full migration of combat systems in Sinistrum' },
+      { name: 'Multiplayer & Networking', level: 3, note: 'All projects multiplayer-ready; 2 dedicated networking courses; EOS & Steam' },
+      { name: 'Inventory & Equipment Systems', level: 3, note: 'Dedicated course + Inventory Framework integration via GAS' },
+      { name: 'AI — Behaviour Trees & Navigation', level: 2, note: 'Implemented in Sinistrum & SinCleaners; covered in multiple courses' },
+      { name: 'Physics & Interaction Systems', level: 2, note: 'Custom rope physics, climbing, player-to-player interactions' },
+    ],
+  },
+  {
+    category: 'Tools & Integrations',
+    items: [
+      { name: 'EOS / Steam Online Subsystem', level: 2, note: 'Full integration in Sinistrum + course coverage' },
+      { name: 'PCG (Procedural Content Generation)', level: 2, note: 'Used in Sinistrum for procedural level content' },
+      { name: 'UMG / UI Design', level: 2, note: 'HUD, inventory UI, menus across projects and courses' },
+      { name: 'Animation Blueprints', level: 2, note: 'Character animation logic across all projects' },
+      { name: 'Niagara / VFX', level: 1, note: 'Particle effects and gameplay cues via GAS course' },
+      { name: 'MetaHumans', level: 1, note: 'Basic character customisation in Sinistrum' },
+    ],
+  },
+  {
+    category: 'General Engineering',
+    items: [
+      { name: 'Software Architecture', level: 2, note: '4+ years of professional architecture experience' },
+      { name: 'Object-Oriented Design', level: 4, note: '10+ years of software engineering' },
+      { name: 'Version Control (Git / Perforce)', level: 4, note: 'Used across all projects' },
+      { name: 'Problem Solving & Debugging', level: 4, note: 'Core strength from decade of engineering' },
+    ],
+  },
+]
+
+export const skillLevels = {
+  1: 'Basic',
+  2: 'Proficient',
+  3: 'Advanced',
+  4: 'Expert',
+}

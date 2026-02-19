@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { projects, courses } from './data/projects.js'
+import { projects, courses, skills, skillLevels } from './data/projects.js'
 import MediaCarousel from './components/MediaCarousel.vue'
 
 const primaryProject = projects.find(p => p.tier === 'primary')
@@ -36,27 +36,33 @@ function toggleHighlights(id) {
         <div class="hero-text">
           <h1 class="hero-title">Faust Games</h1>
           <p class="hero-subtitle">
-            I'm <span class="hero-name">Egor</span>, aka <span class="hero-name">Faust</span> —
-            a game developer who turns caffeine and creative obsession into
-            interactive worlds. I design, build, and ship games that stick with
-            you long after the screen goes dark.
+            Hi, I'm <span class="hero-name">Egor</span> — aka <span class="hero-name">Faust</span>.
+            Software Engineer, Team Lead, and Software Architect with over a decade of
+            enterprise experience. I also have a burning passion for game development and gaming,
+            spending the last 3 years learning game design, mastering Unreal Engine 5,
+            and building my own projects.
           </p>
-          <p class="hero-flavor">Gamer with a burning passion</p>
+          <ul class="hero-bullets">
+            <li>10+ years building and shipping production software across enterprise domains</li>
+            <li>Led and architected cross-functional engineering teams and complex systems</li>
+            <li>3+ years deep in Unreal Engine 5 — C++, multiplayer, GAS, and beyond</li>
+            <li>Driven by a genuine passion for games: designing, building, and playing them</li>
+          </ul>
           <div class="hero-stats">
             <div class="stat">
               <span class="stat-number">10<span class="stat-plus">+</span></span>
               <span class="stat-bar"></span>
-              <span class="stat-label">Years of Software Engineering</span>
+              <span class="stat-label">Years of Commercial Software Engineering</span>
             </div>
             <div class="stat">
               <span class="stat-number">4<span class="stat-plus">+</span></span>
               <span class="stat-bar"></span>
-              <span class="stat-label">Years of Software Architecture</span>
+              <span class="stat-label">Years of Commercial Software Architecture</span>
             </div>
             <div class="stat">
               <span class="stat-number">3<span class="stat-plus">+</span></span>
               <span class="stat-bar"></span>
-              <span class="stat-label">Years of Game Dev & Design in UE</span>
+              <span class="stat-label">Years of Game Dev & Design in UE5</span>
             </div>
           </div>
         </div>
@@ -180,14 +186,35 @@ function toggleHighlights(id) {
       </div>
     </section>
 
-    <!-- ─── SKILLS (placeholder) ─── -->
+    <!-- ─── SKILLS ─── -->
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title">Skills & Experience</h2>
-        <span class="section-note">Coming soon</span>
+        <h2 class="section-title">Skills & Proficiency</h2>
       </div>
-      <div class="skills-placeholder">
-        <p>Detailed breakdown of tools, engines, languages, and shipped titles — to be expanded.</p>
+      <div class="skills-grid">
+        <div v-for="group in skills" :key="group.category" class="skill-group">
+          <h3 class="skill-category">{{ group.category }}</h3>
+          <div class="skill-list">
+            <div v-for="skill in group.items" :key="skill.name" class="skill-row">
+              <div class="skill-info">
+                <span class="skill-name">{{ skill.name }}</span>
+                <span class="skill-note">{{ skill.note }}</span>
+              </div>
+              <div class="skill-meter">
+                <div class="skill-track">
+                  <div
+                    class="skill-fill"
+                    :class="'skill-fill--' + skill.level"
+                    :style="{ width: (skill.level / 4 * 100) + '%' }"
+                  ></div>
+                </div>
+                <span class="skill-label" :class="'skill-label--' + skill.level">
+                  {{ skillLevels[skill.level] }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -316,21 +343,31 @@ function toggleHighlights(id) {
   font-weight: 600;
 }
 
-.hero-flavor {
-  margin-top: 0.75rem;
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--warm);
+.hero-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-width: 480px;
 }
 
-.hero-flavor::before {
-  content: '🔥';
-  font-size: 0.9rem;
+.hero-bullets li {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.hero-bullets li::before {
+  content: '▹';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-size: 0.75rem;
+  top: 0.1em;
 }
 
 .hero-stats {
@@ -758,18 +795,123 @@ function toggleHighlights(id) {
   color: var(--text-muted);
 }
 
-/* ───────── SKILLS PLACEHOLDER ───────── */
-.skills-placeholder {
-  padding: 2rem;
-  background: var(--bg-card);
-  border: 1px dashed var(--border-default);
-  border-radius: 6px;
-  text-align: center;
+/* ───────── SKILLS ───────── */
+.skills-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
 }
 
-.skills-placeholder p {
-  font-size: 0.85rem;
+.skill-group {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+}
+
+.skill-category {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--text-muted);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.skill-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.skill-name {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.skill-note {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-top: 0.1rem;
+}
+
+.skill-meter {
+  flex-shrink: 0;
+  width: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+
+.skill-track {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.skill-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.skill-fill--1 {
+  background: var(--text-muted);
+}
+
+.skill-fill--2 {
+  background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+}
+
+.skill-fill--3 {
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+}
+
+.skill-fill--4 {
+  background: linear-gradient(90deg, var(--warm), #ffb74d);
+}
+
+.skill-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.skill-label--1 {
+  color: var(--text-muted);
+}
+
+.skill-label--2 {
+  color: var(--text-secondary);
+}
+
+.skill-label--3 {
+  color: var(--accent);
+}
+
+.skill-label--4 {
+  color: var(--warm);
 }
 
 /* ───────── FOOTER ───────── */
