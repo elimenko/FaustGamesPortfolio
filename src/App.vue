@@ -2,7 +2,9 @@
 import { ref } from 'vue'
 import { projects, courses, skills, skillLevels } from './data/projects.js'
 import MediaCarousel from './components/MediaCarousel.vue'
+import { useScrollReveal } from './composables/useScrollReveal.js'
 
+const appShell = ref(null)
 const primaryProject = projects.find(p => p.tier === 'primary')
 const secondaryProjects = projects.filter(p => p.tier === 'secondary')
 
@@ -11,10 +13,12 @@ const expandedProject = ref(null)
 function toggleHighlights(id) {
   expandedProject.value = expandedProject.value === id ? null : id
 }
+
+useScrollReveal(appShell)
 </script>
 
 <template>
-  <div class="app-shell">
+  <div ref="appShell" class="app-shell">
     <!-- ─── TOP NAV ─── -->
     <nav class="nav">
       <div class="nav-brand">
@@ -72,18 +76,17 @@ function toggleHighlights(id) {
       </div>
     </section>
 
-    <!-- ─── PROJECTS ─── -->
-    <section class="section">
+    <!-- ─── PRIMARY PROJECT ─── -->
+    <section class="section section--wide reveal reveal--right">
       <div class="section-header">
-        <h2 class="section-title">Projects</h2>
+        <h2 class="section-title">Featured Project</h2>
       </div>
 
-      <!-- Primary project — full width, Steam-style layout -->
-      <article class="card card-primary">
-        <div class="card-media">
+      <article class="card card-primary card-primary--split">
+        <div class="card-media card-media--split">
           <MediaCarousel :media="primaryProject.media" :project-id="primaryProject.id" />
         </div>
-        <div class="card-body card-body--lg">
+        <div class="card-body card-body--lg card-body--split">
           <div class="card-top">
             <h3 class="card-title card-title--lg">{{ primaryProject.name }}</h3>
             <span class="card-hours">{{ primaryProject.timeSpent }} hrs</span>
@@ -108,8 +111,13 @@ function toggleHighlights(id) {
           </ul>
         </div>
       </article>
+    </section>
 
-      <!-- Secondary projects — two columns -->
+    <!-- ─── SECONDARY PROJECTS ─── -->
+    <section class="section section--wide reveal reveal--up">
+      <div class="section-header section-header--center">
+        <h2 class="section-title">More Projects</h2>
+      </div>
       <div class="grid-secondary">
         <article
           v-for="project in secondaryProjects"
@@ -145,13 +153,13 @@ function toggleHighlights(id) {
     </section>
 
     <!-- ─── COURSES ─── -->
-    <section class="section">
+    <section class="section section--wide reveal reveal--left">
       <div class="section-header">
         <h2 class="section-title">Courses & Certifications</h2>
       </div>
       <template v-if="courses.length">
         <div class="grid-courses">
-          <article v-for="course in courses" :key="course.id" class="course-card">
+          <article v-for="(course, idx) in courses" :key="course.id" class="course-card reveal reveal--up" :style="{ transitionDelay: (idx * 0.08) + 's' }">
             <div class="course-header">
               <div class="course-header-text">
                 <h4 class="course-title">{{ course.title }}</h4>
@@ -187,8 +195,8 @@ function toggleHighlights(id) {
     </section>
 
     <!-- ─── SKILLS ─── -->
-    <section class="section">
-      <div class="section-header">
+    <section class="section section--wide reveal reveal--right">
+      <div class="section-header section-header--center">
         <h2 class="section-title">Skills & Proficiency</h2>
       </div>
       <div class="skills-grid">
@@ -219,7 +227,7 @@ function toggleHighlights(id) {
     </section>
 
     <!-- ─── FOOTER ─── -->
-    <footer class="footer">
+    <footer class="footer reveal reveal--up">
       <span class="footer-text">© 2025 Faust Games · All rights reserved</span>
     </footer>
   </div>
@@ -256,13 +264,16 @@ function toggleHighlights(id) {
 .brand-icon {
   color: var(--accent);
   font-size: 1rem;
+  text-shadow: 0 0 8px var(--accent);
 }
 
 .brand-text {
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  color: var(--text-primary);
+  font-family: var(--font-pixel);
+  font-size: 0.55rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-dim);
 }
 
 .nav-links {
@@ -271,12 +282,15 @@ function toggleHighlights(id) {
 }
 
 .nav-link {
+  font-family: var(--font-mono);
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: 0.82rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 400;
   padding: 0.4rem 0.85rem;
   border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   transition: color 0.15s, background 0.15s;
 }
 
@@ -287,25 +301,43 @@ function toggleHighlights(id) {
 
 .nav-link.active {
   color: var(--accent);
+  text-shadow: 0 0 8px var(--accent-dim);
 }
 
 /* ───────── HERO ───────── */
 .hero {
   position: relative;
-  min-height: 340px;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3rem 2rem;
+  padding: 6rem 3rem;
   background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-root) 100%);
   border-bottom: 1px solid var(--border-subtle);
   overflow: hidden;
 }
 
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background:
+    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(0deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px) 0 0 / 40px 40px;
+  mask-image: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  pointer-events: none;
+}
+
 .hero-glow {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 70% at 75% 50%, rgba(79, 195, 247, 0.04) 0%, transparent 70%);
+  background:
+    radial-gradient(ellipse 50% 60% at 75% 50%, rgba(0, 240, 255, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 50% at 25% 60%, rgba(255, 45, 149, 0.03) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -313,8 +345,8 @@ function toggleHighlights(id) {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 3rem;
-  max-width: 900px;
+  gap: 4rem;
+  max-width: 1100px;
   width: 100%;
 }
 
@@ -323,38 +355,41 @@ function toggleHighlights(id) {
 }
 
 .hero-title {
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1.1;
+  font-family: var(--font-pixel);
+  font-size: 2.4rem;
+  font-weight: 400;
+  line-height: 1.3;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
-  margin-bottom: 1rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 1.25rem;
+  text-shadow: 0 0 20px var(--accent-dim), 0 0 40px rgba(0, 240, 255, 0.05);
 }
 
 .hero-subtitle {
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--text-secondary);
-  line-height: 1.7;
-  max-width: 480px;
+  line-height: 1.75;
+  max-width: 540px;
 }
 
 .hero-name {
   color: var(--accent);
   font-weight: 600;
+  text-shadow: 0 0 8px var(--accent-dim);
 }
 
 .hero-bullets {
   list-style: none;
   padding: 0;
-  margin: 1rem 0 0;
+  margin: 1.25rem 0 0;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  max-width: 480px;
+  gap: 0.55rem;
+  max-width: 540px;
 }
 
 .hero-bullets li {
-  font-size: 0.84rem;
+  font-size: 0.92rem;
   color: var(--text-secondary);
   line-height: 1.55;
   padding-left: 1rem;
@@ -362,18 +397,20 @@ function toggleHighlights(id) {
 }
 
 .hero-bullets li::before {
-  content: '▹';
+  content: '>';
+  font-family: var(--font-pixel);
   position: absolute;
   left: 0;
   color: var(--accent);
-  font-size: 0.75rem;
-  top: 0.1em;
+  font-size: 0.5rem;
+  top: 0.3em;
+  text-shadow: 0 0 6px var(--accent-dim);
 }
 
 .hero-stats {
   display: flex;
-  gap: 2rem;
-  margin-top: 1.5rem;
+  gap: 2.5rem;
+  margin-top: 2rem;
 }
 
 .stat {
@@ -383,15 +420,18 @@ function toggleHighlights(id) {
 }
 
 .stat-number {
-  font-size: 2rem;
-  font-weight: 800;
+  font-family: var(--font-pixel);
+  font-size: 1.5rem;
+  font-weight: 400;
   color: var(--text-primary);
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
+  text-shadow: 0 0 12px var(--accent-dim);
 }
 
 .stat-plus {
   color: var(--accent);
+  text-shadow: 0 0 8px var(--accent);
 }
 
 .stat-bar {
@@ -400,14 +440,18 @@ function toggleHighlights(id) {
   height: 2px;
   background: linear-gradient(90deg, var(--accent), transparent);
   border-radius: 1px;
+  box-shadow: 0 0 6px var(--accent-dim);
 }
 
 .stat-label {
-  font-size: 0.7rem;
-  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 400;
   color: var(--text-muted);
-  line-height: 1.35;
-  max-width: 130px;
+  line-height: 1.4;
+  max-width: 150px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .hero-photo {
@@ -418,31 +462,42 @@ function toggleHighlights(id) {
   width: 350px;
   height: 350px;
   border-radius: 50%;
-  border: 2px solid var(--border-default);
+  border: 2px solid rgba(0, 240, 255, 0.2);
   object-fit: cover;
   display: block;
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.08), 0 0 60px rgba(255, 45, 149, 0.04);
 }
 
 /* ───────── SECTIONS ───────── */
 .section {
-  padding: 3rem 2rem;
-  max-width: 960px;
+  padding: 5rem 3rem;
+  max-width: 1100px;
   width: 100%;
   margin: 0 auto;
+}
+
+.section--wide {
+  max-width: 1200px;
 }
 
 .section-header {
   display: flex;
   align-items: baseline;
   gap: 0.75rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.section-header--center {
+  justify-content: center;
 }
 
 .section-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-family: var(--font-pixel);
+  font-size: 0.95rem;
+  font-weight: 400;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 14px var(--accent-dim);
 }
 
 .section-note {
@@ -519,13 +574,16 @@ function toggleHighlights(id) {
 }
 
 .card-title {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .card-title--lg {
-  font-size: 1.35rem;
+  font-family: var(--font-pixel);
+  font-size: 0.95rem;
+  font-weight: 400;
+  text-shadow: 0 0 10px var(--accent-dim);
 }
 
 .card-hours {
@@ -543,15 +601,15 @@ function toggleHighlights(id) {
 }
 
 .card-desc {
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 0.75rem;
+  line-height: 1.65;
+  margin-bottom: 0.85rem;
 }
 
 .card-desc--lg {
-  font-size: 0.88rem;
-  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  margin-bottom: 1.25rem;
 }
 
 .card-tags {
@@ -561,13 +619,16 @@ function toggleHighlights(id) {
 }
 
 .tag {
-  font-size: 0.68rem;
-  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 400;
   color: var(--text-muted);
   background: var(--bg-elevated);
   padding: 0.2rem 0.55rem;
   border-radius: 3px;
   border: 1px solid var(--border-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .tag--sm {
@@ -591,8 +652,8 @@ function toggleHighlights(id) {
 }
 
 .tag--fw {
-  border-color: rgba(79, 195, 247, 0.15);
-  color: var(--text-secondary);
+  border-color: rgba(180, 77, 255, 0.15);
+  color: var(--neon-purple);
 }
 
 .btn--expand {
@@ -619,40 +680,63 @@ function toggleHighlights(id) {
 }
 
 .highlights-list li::before {
-  content: '▹';
+  content: '>';
+  font-family: var(--font-pixel);
   position: absolute;
   left: 0;
   color: var(--accent);
-  font-size: 0.7rem;
+  font-size: 0.4rem;
+  top: 0.25em;
+  text-shadow: 0 0 4px var(--accent-dim);
 }
 
-/* ───────── PRIMARY CARD ───────── */
+/* ───────── PRIMARY CARD (split layout) ───────── */
 .card-primary {
-  border-color: rgba(79, 195, 247, 0.12);
+  border-color: rgba(0, 240, 255, 0.1);
   margin-bottom: 1rem;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.03);
+}
+
+.card-primary--split {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  overflow: hidden;
+}
+
+.card-media--split {
+  min-height: 100%;
+}
+
+.card-body--split {
+  padding: 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .card-primary:hover {
-  border-color: rgba(79, 195, 247, 0.25);
+  border-color: rgba(0, 240, 255, 0.25);
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.06);
 }
 
 /* ───────── SECONDARY GRID ───────── */
 .grid-secondary {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 /* ───────── COURSES ───────── */
 .grid-courses {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .course-card {
-  padding: 1.25rem 1.5rem;
+  padding: 1.5rem 2rem;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
@@ -677,10 +761,10 @@ function toggleHighlights(id) {
 }
 
 .course-title {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.2rem;
 }
 
 .course-author {
@@ -721,7 +805,7 @@ function toggleHighlights(id) {
 }
 
 .course-overview {
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 0.75rem;
@@ -737,7 +821,7 @@ function toggleHighlights(id) {
 }
 
 .course-learned li {
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
   line-height: 1.45;
   position: relative;
@@ -745,11 +829,14 @@ function toggleHighlights(id) {
 }
 
 .course-learned li::before {
-  content: '▹';
+  content: '>';
+  font-family: var(--font-pixel);
   position: absolute;
   left: 0;
   color: var(--accent);
-  font-size: 0.65rem;
+  font-size: 0.4rem;
+  top: 0.2em;
+  text-shadow: 0 0 4px var(--accent-dim);
 }
 
 .course-footer {
@@ -799,25 +886,29 @@ function toggleHighlights(id) {
 .skills-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .skill-group {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
-  padding: 1.25rem 1.5rem;
+  padding: 1.5rem 2rem;
 }
 
 .skill-category {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--neon-purple);
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border-subtle);
+  text-shadow: 0 0 8px var(--neon-purple-dim);
 }
 
 .skill-list {
@@ -839,7 +930,7 @@ function toggleHighlights(id) {
 
 .skill-name {
   display: block;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
@@ -847,7 +938,7 @@ function toggleHighlights(id) {
 
 .skill-note {
   display: block;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   line-height: 1.4;
   margin-top: 0.1rem;
@@ -882,20 +973,25 @@ function toggleHighlights(id) {
 
 .skill-fill--2 {
   background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+  box-shadow: 0 0 6px var(--accent-dim);
 }
 
 .skill-fill--3 {
   background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  box-shadow: 0 0 8px var(--accent-dim);
 }
 
 .skill-fill--4 {
-  background: linear-gradient(90deg, var(--warm), #ffb74d);
+  background: linear-gradient(90deg, var(--warm), #ff6eb4);
+  box-shadow: 0 0 8px var(--warm-dim);
 }
 
 .skill-label {
-  font-size: 0.62rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 400;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .skill-label--1 {
@@ -923,7 +1019,32 @@ function toggleHighlights(id) {
 }
 
 .footer-text {
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
   color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+/* ───────── SCROLL REVEAL ANIMATIONS ───────── */
+.reveal {
+  opacity: 0;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal--up {
+  transform: translateY(40px);
+}
+
+.reveal--left {
+  transform: translateX(-40px);
+}
+
+.reveal--right {
+  transform: translateX(40px);
+}
+
+.reveal.revealed {
+  opacity: 1;
+  transform: translate(0, 0);
 }
 </style>
