@@ -30,7 +30,7 @@ export const projects = [
       'Hit-scan and projectile weapon systems (migrated from plain UE code to GAS)',
       'Melee combat system (migrated from plain UE code to GAS)',
       'MetaHumans integration with basic character customization',
-      'Dynamic weather system',
+      'Dynamic day-night cycle and weather system',
     ],
     frameworks: [
       'Gameplay Framework',

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { projects, courses, skills, skillLevels } from './data/projects.js'
 import MediaCarousel from './components/MediaCarousel.vue'
 import { useScrollReveal } from './composables/useScrollReveal.js'
@@ -9,9 +9,52 @@ const primaryProject = projects.find(p => p.tier === 'primary')
 const secondaryProjects = projects.filter(p => p.tier === 'secondary')
 
 const expandedProject = ref(null)
+const expandedCourse = ref(null)
+const activeSection = ref('hero')
+
+const sectionIds = ['hero', 'projects', 'more-projects', 'courses', 'skills']
+let sectionObserver = null
+
+onMounted(() => {
+  sectionObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const id = entry.target.id
+          if (id === 'more-projects') {
+            activeSection.value = 'projects'
+          } else {
+            activeSection.value = id
+          }
+        }
+      }
+    },
+    { threshold: 0.3 }
+  )
+  sectionIds.forEach((id) => {
+    const el = document.getElementById(id)
+    if (el) sectionObserver.observe(el)
+  })
+})
+
+onUnmounted(() => {
+  if (sectionObserver) sectionObserver.disconnect()
+})
 
 function toggleHighlights(id) {
   expandedProject.value = expandedProject.value === id ? null : id
+}
+
+function toggleCourse(id) {
+  expandedCourse.value = expandedCourse.value === id ? null : id
+}
+
+function scrollToSection(e, sectionId) {
+  e.preventDefault()
+  const el = document.getElementById(sectionId)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' })
+  }
 }
 
 useScrollReveal(appShell)
@@ -26,25 +69,23 @@ useScrollReveal(appShell)
         <span class="brand-text">FAUST GAMES</span>
       </div>
       <div class="nav-links">
-        <a href="#" class="nav-link active">Portfolio</a>
-        <a href="#" class="nav-link">About</a>
-        <a href="#" class="nav-link">Skills</a>
-        <a href="#" class="nav-link">Contact</a>
+        <a href="#hero" class="nav-link" :class="{ active: activeSection === 'hero' }" @click="scrollToSection($event, 'hero')">Home</a>
+        <a href="#projects" class="nav-link" :class="{ active: activeSection === 'projects' }" @click="scrollToSection($event, 'projects')">Projects</a>
+        <a href="#courses" class="nav-link" :class="{ active: activeSection === 'courses' }" @click="scrollToSection($event, 'courses')">Courses</a>
+        <a href="#skills" class="nav-link" :class="{ active: activeSection === 'skills' }" @click="scrollToSection($event, 'skills')">Skills</a>
       </div>
     </nav>
 
-    <!-- ─── HERO / INTRO ─── -->
-    <section class="hero">
-      <div class="hero-glow"></div>
+    <!-- ─── HERO ─── -->
+    <section id="hero" class="screen hero">
       <div class="hero-inner">
         <div class="hero-text">
-          <h1 class="hero-title">Faust Games</h1>
+          <p class="hero-eyebrow">SOFTWARE ENGINEER · TEAM LEAD · ARCHITECT</p>
+          <h1 class="hero-title">Faust<br/><span class="hero-title-accent">Games</span></h1>
           <p class="hero-subtitle">
             Hi, I'm <span class="hero-name">Egor</span> — aka <span class="hero-name">Faust</span>.
-            Software Engineer, Team Lead, and Software Architect with over a decade of
-            enterprise experience. I also have a burning passion for game development and gaming,
-            spending the last 3 years learning game design, mastering Unreal Engine 5,
-            and building my own projects.
+            Over a decade of enterprise software experience, and a burning passion for game development —
+            spending the last 3 years mastering Unreal Engine 5 and building original projects.
           </p>
           <ul class="hero-bullets">
             <li>10+ years building and shipping production software across enterprise domains</li>
@@ -94,149 +135,125 @@ useScrollReveal(appShell)
       </div>
     </section>
 
-    <!-- ─── PRIMARY PROJECT ─── -->
-    <section class="section section--wide reveal reveal--right">
-      <div class="section-header">
-        <h2 class="section-title">Featured Project</h2>
-      </div>
-
-      <article class="card card-primary card-primary--split">
-        <div class="card-media card-media--split">
-          <MediaCarousel :media="primaryProject.media" :project-id="primaryProject.id" />
-        </div>
-        <div class="card-body card-body--lg card-body--split">
-          <div class="card-top">
-            <h3 class="card-title card-title--lg">{{ primaryProject.name }}</h3>
-            <span class="card-hours">{{ primaryProject.timeSpent }} hrs</span>
+    <!-- ─── FEATURED PROJECT ─── -->
+    <section id="projects" class="screen screen--alt reveal reveal--up">
+      <div class="screen-inner">
+        <p class="screen-eyebrow">FEATURED PROJECT</p>
+        <article class="project-split project-split--featured">
+          <div class="project-split__media">
+            <MediaCarousel :media="primaryProject.media" :project-id="primaryProject.id" />
           </div>
-          <p class="card-genre">{{ primaryProject.genre }} · {{ primaryProject.perspective }}</p>
-          <p class="card-desc card-desc--lg">{{ primaryProject.description }}</p>
-          <p class="card-tech-detail">{{ primaryProject.techDetails }}</p>
-          <div class="card-tags">
-            <span v-for="tag in primaryProject.technologies" :key="tag" class="tag">{{ tag }}</span>
-          </div>
-          <div v-if="primaryProject.frameworks.length" class="card-frameworks">
-            <span v-for="fw in primaryProject.frameworks" :key="fw" class="tag tag--fw">{{ fw }}</span>
-          </div>
-          <button
-            class="btn btn-ghost btn--expand"
-            @click="toggleHighlights(primaryProject.id)"
-          >
-            {{ expandedProject === primaryProject.id ? '▾ Hide' : '▸ Show' }} Highlights ({{ primaryProject.highlights.length }})
-          </button>
-          <ul v-if="expandedProject === primaryProject.id" class="highlights-list">
-            <li v-for="h in primaryProject.highlights" :key="h">{{ h }}</li>
-          </ul>
-        </div>
-      </article>
-    </section>
-
-    <!-- ─── SECONDARY PROJECTS ─── -->
-    <section class="section section--wide reveal reveal--up">
-      <div class="section-header section-header--center">
-        <h2 class="section-title">More Projects</h2>
-      </div>
-      <div class="grid-secondary">
-        <article
-          v-for="project in secondaryProjects"
-          :key="project.id"
-          class="card"
-        >
-          <div class="card-media">
-            <MediaCarousel :media="project.media" :project-id="project.id" />
-          </div>
-          <div class="card-body">
-            <div class="card-top">
-              <h3 class="card-title">{{ project.name }}</h3>
-              <span class="card-hours">{{ project.timeSpent }} hrs</span>
+          <div class="project-split__body">
+            <div class="project-header">
+              <h2 class="project-name">{{ primaryProject.name }}</h2>
+              <span class="project-hours">{{ primaryProject.timeSpent }} hrs</span>
             </div>
-            <p class="card-genre">{{ project.genre }} · {{ project.perspective }}</p>
-            <p class="card-desc">{{ project.description }}</p>
-            <p class="card-tech-detail">{{ project.techDetails }}</p>
-            <div class="card-tags">
-              <span v-for="tag in project.technologies" :key="tag" class="tag">{{ tag }}</span>
+            <p class="project-genre">{{ primaryProject.genre }} · {{ primaryProject.perspective }}</p>
+            <p class="project-desc">{{ primaryProject.description }}</p>
+            <div class="project-chips">
+              <span class="chip chip--tech">Unreal Engine 5</span>
+              <span class="chip chip--tech">C++</span>
+              <span class="chip chip--tech">Blueprints</span>
+              <span class="chip chip--tech">GAS</span>
             </div>
-            <button
-              class="btn btn-ghost btn--expand"
-              @click="toggleHighlights(project.id)"
-            >
-              {{ expandedProject === project.id ? '▾ Hide' : '▸ Show' }} Highlights ({{ project.highlights.length }})
-            </button>
-            <ul v-if="expandedProject === project.id" class="highlights-list">
-              <li v-for="h in project.highlights" :key="h">{{ h }}</li>
+            <ul class="highlights-list highlights-list--2col">
+              <li v-for="h in primaryProject.highlights" :key="h">{{ h }}</li>
             </ul>
           </div>
         </article>
       </div>
     </section>
 
-    <!-- ─── COURSES ─── -->
-    <section class="section section--wide reveal reveal--left">
-      <div class="section-header">
-        <h2 class="section-title">Courses & Certifications</h2>
-      </div>
-      <template v-if="courses.length">
-        <div class="grid-courses">
-          <article v-for="(course, idx) in courses" :key="course.id" class="course-card reveal reveal--up" :style="{ transitionDelay: (idx * 0.08) + 's' }">
-            <div class="course-header">
-              <div class="course-header-text">
-                <h4 class="course-title">{{ course.title }}</h4>
-                <span class="course-author">{{ course.author }}</span>
-              </div>
-              <a
-                v-if="course.certificateUrl"
-                :href="course.certificateUrl"
-                download
-                class="udemy-badge"
-                title="Download Udemy Certificate"
-              >
-                <img src="/media/main/udemy-logo.webp" alt="Udemy" class="udemy-icon" />
-                <span class="udemy-label">Certificate</span>
-              </a>
+    <!-- ─── MORE PROJECTS ─── -->
+    <section class="screen reveal reveal--up">
+      <div class="screen-inner">
+        <p class="screen-eyebrow">MORE PROJECTS</p>
+        <div class="projects-row">
+          <article v-for="project in secondaryProjects" :key="project.id" class="project-card">
+            <div class="project-card__media">
+              <MediaCarousel :media="project.media" :project-id="project.id" />
             </div>
-            <p class="course-overview">{{ course.overview }}</p>
-            <ul class="course-learned">
-              <li v-for="item in course.learned" :key="item">{{ item }}</li>
-            </ul>
-            <div class="course-footer">
-              <div class="course-tags">
-                <span v-for="tag in course.tags" :key="tag" class="tag tag--sm">{{ tag }}</span>
+            <div class="project-card__body">
+              <div class="project-header">
+                <h3 class="project-name project-name--sm">{{ project.name }}</h3>
+                <span class="project-hours">{{ project.timeSpent }} hrs</span>
               </div>
-              <a v-if="course.githubUrl" :href="course.githubUrl" target="_blank" class="btn btn-ghost btn--sm">GitHub</a>
+              <p class="project-genre">{{ project.genre }} · {{ project.perspective }}</p>
+              <p class="project-desc">{{ project.description }}</p>
+              <div class="project-chips">
+                <span v-for="tag in project.technologies.slice(0, 4)" :key="tag" class="chip chip--tech">{{ tag }}</span>
+              </div>
+              <ul class="highlights-list">
+                <li v-for="h in project.highlights" :key="h">{{ h }}</li>
+              </ul>
             </div>
           </article>
         </div>
-      </template>
-      <div v-else class="courses-placeholder">
-        <p>Course projects with GitHub links and certificates — coming next.</p>
+      </div>
+    </section>
+
+    <!-- ─── COURSES ─── -->
+    <section id="courses" class="screen screen--alt reveal reveal--up">
+      <div class="screen-inner">
+        <p class="screen-eyebrow">COURSES & CERTIFICATIONS</p>
+        <template v-if="courses.length">
+          <div class="grid-courses">
+            <article v-for="(course, idx) in courses" :key="course.id" class="course-card reveal reveal--up" :style="{ transitionDelay: (idx * 0.08) + 's' }">
+              <div class="course-header" @click="toggleCourse(course.id)">
+                <div class="course-header-text">
+                  <span class="course-expand-icon" :class="{ 'course-expand-icon--open': expandedCourse === course.id }"></span>
+                  <div>
+                    <h4 class="course-title">{{ course.title }}</h4>
+                    <span class="course-author">{{ course.author }}</span>
+                  </div>
+                </div>
+                <a v-if="course.certificateUrl" :href="course.certificateUrl" download class="udemy-badge" title="Download Udemy Certificate" @click.stop>
+                  <img src="/media/main/udemy-logo.webp" alt="Udemy" class="udemy-icon" />
+                  <span class="udemy-label">Certificate</span>
+                </a>
+              </div>
+              <div class="course-collapse" :class="{ 'course-collapse--open': expandedCourse === course.id }">
+                <div class="course-content">
+                  <p class="course-overview">{{ course.overview }}</p>
+                  <ul class="course-learned">
+                    <li v-for="item in course.learned" :key="item">{{ item }}</li>
+                  </ul>
+                  <div class="course-footer">
+                    <div class="course-tags">
+                      <span v-for="tag in course.tags" :key="tag" class="chip chip--sm">{{ tag }}</span>
+                    </div>
+                    <a v-if="course.githubUrl" :href="course.githubUrl" target="_blank" class="btn-ghost" @click.stop>GitHub</a>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </template>
+        <div v-else class="courses-placeholder">
+          <p>Course projects with GitHub links and certificates — coming next.</p>
+        </div>
       </div>
     </section>
 
     <!-- ─── SKILLS ─── -->
-    <section class="section section--wide reveal reveal--right">
-      <div class="section-header section-header--center">
-        <h2 class="section-title">Skills & Proficiency</h2>
-      </div>
-      <div class="skills-grid">
-        <div v-for="group in skills" :key="group.category" class="skill-group">
-          <h3 class="skill-category">{{ group.category }}</h3>
-          <div class="skill-list">
-            <div v-for="skill in group.items" :key="skill.name" class="skill-row">
-              <div class="skill-info">
-                <span class="skill-name">{{ skill.name }}</span>
-                <span class="skill-note">{{ skill.note }}</span>
-              </div>
-              <div class="skill-meter">
-                <div class="skill-track">
-                  <div
-                    class="skill-fill"
-                    :class="'skill-fill--' + skill.level"
-                    :style="{ width: (skill.level / 4 * 100) + '%' }"
-                  ></div>
+    <section id="skills" class="screen reveal reveal--up">
+      <div class="screen-inner">
+        <p class="screen-eyebrow">SKILLS & PROFICIENCY</p>
+        <div class="skills-row">
+          <div v-for="group in skills" :key="group.category" class="skill-group">
+            <h3 class="skill-category">{{ group.category }}</h3>
+            <div class="skill-list">
+              <div v-for="skill in group.items" :key="skill.name" class="skill-row">
+                <div class="skill-info">
+                  <span class="skill-name">{{ skill.name }}</span>
+                  <span class="skill-note">{{ skill.note }}</span>
                 </div>
-                <span class="skill-label" :class="'skill-label--' + skill.level">
-                  {{ skillLevels[skill.level] }}
-                </span>
+                <div class="skill-meter">
+                  <div class="skill-track">
+                    <div v-for="seg in 4" :key="seg" class="skill-segment" :class="{ 'skill-segment--active': seg <= skill.level, ['skill-segment--' + skill.level]: seg <= skill.level }"></div>
+                  </div>
+                  <span class="skill-label" :class="'skill-label--' + skill.level">{{ skillLevels[skill.level] }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -252,484 +269,369 @@ useScrollReveal(appShell)
 </template>
 
 <style scoped>
-/* ───────── SHELL ───────── */
+/* ═══════════════════════════════════════
+   SHELL
+═══════════════════════════════════════ */
 .app-shell {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
 }
 
-/* ───────── NAV ───────── */
+/* ═══ NAV ═══ */
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
-  height: 56px;
-  background: var(--bg-surface);
+  padding: 0 4rem;
+  height: 64px;
+  background: rgba(0,0,0,0.92);
   border-bottom: 1px solid var(--border-subtle);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  backdrop-filter: blur(10px);
 }
-
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.brand-icon {
-  color: var(--accent);
-  font-size: 1rem;
-  text-shadow: 0 0 8px var(--accent);
-}
-
+.nav-brand { display: flex; align-items: center; gap: 0.6rem; }
+.brand-icon { color: var(--accent); font-size: 1.1rem; }
 .brand-text {
   font-family: var(--font-pixel);
-  font-size: 0.55rem;
-  font-weight: 400;
-  letter-spacing: 0.12em;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
   color: var(--accent);
-  text-shadow: 0 0 10px var(--accent-dim);
 }
-
-.nav-links {
-  display: flex;
-  gap: 0.25rem;
-}
-
+.nav-links { display: flex; gap: 0.5rem; }
 .nav-link {
   font-family: var(--font-mono);
-  color: var(--text-secondary);
+  color: var(--text-muted);
   text-decoration: none;
-  font-size: 0.75rem;
-  font-weight: 400;
-  padding: 0.4rem 0.85rem;
-  border-radius: 4px;
+  font-size: 1.1rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 3px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   transition: color 0.15s, background 0.15s;
 }
+.nav-link:hover { color: var(--text-secondary); background: var(--bg-elevated); }
+.nav-link.active { color: var(--accent); }
 
-.nav-link:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
-}
-
-.nav-link.active {
-  color: var(--accent);
-  text-shadow: 0 0 8px var(--accent-dim);
-}
-
-/* ───────── HERO ───────── */
-.hero {
-  position: relative;
+/* ═══ FULL-SCREEN SECTIONS ═══ */
+.screen {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  padding: 6rem 3rem;
-  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-root) 100%);
+  padding: 80px 3vw 4rem;
   border-bottom: 1px solid var(--border-subtle);
-  overflow: hidden;
+}
+.screen--alt { background: var(--bg-surface); }
+.screen-inner { max-width: 1800px; width: 100%; margin: 0 auto; }
+.screen-eyebrow {
+  font-family: var(--font-pixel);
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  margin-bottom: 3rem;
+  text-align: center;
 }
 
-.hero::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 120px;
-  background:
-    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px) 0 0 / 40px 40px,
-    linear-gradient(0deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px) 0 0 / 40px 40px;
-  mask-image: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
-  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
-  pointer-events: none;
-}
-
-.hero-glow {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 50% 60% at 75% 50%, rgba(0, 240, 255, 0.04) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 50% at 25% 60%, rgba(255, 45, 149, 0.03) 0%, transparent 70%);
-  pointer-events: none;
-}
-
+/* ═══ HERO ═══ */
+.hero { background: var(--bg-root); }
 .hero-inner {
-  position: relative;
   display: flex;
   align-items: center;
-  gap: 4rem;
-  max-width: 1100px;
+  gap: 5rem;
+  max-width: 1400px;
   width: 100%;
+  margin: 0 auto;
 }
-
-.hero-text {
-  flex: 1;
+.hero-text { flex: 1; }
+.hero-eyebrow {
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
 }
-
 .hero-title {
   font-family: var(--font-pixel);
-  font-size: 2.4rem;
-  font-weight: 400;
-  line-height: 1.3;
-  color: var(--text-primary);
-  letter-spacing: 0.02em;
-  margin-bottom: 1.25rem;
-  text-shadow: 0 0 20px var(--accent-dim), 0 0 40px rgba(0, 240, 255, 0.05);
-}
-
-.hero-subtitle {
-  font-size: 1.1rem;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  line-height: 1.25;
   color: var(--text-secondary);
-  line-height: 1.75;
-  max-width: 540px;
+  margin-bottom: 1.5rem;
 }
-
-.hero-name {
-  color: var(--accent);
-  font-weight: 600;
-  text-shadow: 0 0 8px var(--accent-dim);
+.hero-title-accent { color: var(--accent); }
+.hero-subtitle {
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  color: var(--text-muted);
+  line-height: 1.8;
+  max-width: 580px;
+  margin-bottom: 1.5rem;
 }
-
+.hero-name { color: var(--text-secondary); font-weight: 700; }
 .hero-bullets {
   list-style: none;
   padding: 0;
-  margin: 1.25rem 0 0;
+  margin: 0 0 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  max-width: 540px;
+  gap: 0.7rem;
+  max-width: 580px;
 }
-
 .hero-bullets li {
-  font-size: 0.92rem;
-  color: var(--text-secondary);
-  line-height: 1.55;
-  padding-left: 1rem;
+  font-size: clamp(0.9rem, 1.1vw, 1.05rem);
+  color: var(--text-muted);
+  line-height: 1.6;
+  padding-left: 1.4rem;
   position: relative;
 }
-
 .hero-bullets li::before {
   content: '>';
   font-family: var(--font-pixel);
   position: absolute;
   left: 0;
   color: var(--accent);
-  font-size: 0.5rem;
-  top: 0.3em;
-  text-shadow: 0 0 6px var(--accent-dim);
+  font-size: 0.45rem;
+  top: 0.38em;
 }
-
-.hero-stats {
-  display: flex;
-  gap: 2.5rem;
-  margin-top: 2rem;
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
+.hero-stats { display: flex; gap: 3rem; }
+.stat { display: flex; flex-direction: column; gap: 0.4rem; }
 .stat-number {
   font-family: var(--font-pixel);
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: var(--text-primary);
+  font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+  color: var(--text-secondary);
   line-height: 1;
-  letter-spacing: 0;
-  text-shadow: 0 0 12px var(--accent-dim);
 }
-
-.stat-plus {
-  color: var(--accent);
-  text-shadow: 0 0 8px var(--accent);
-}
-
+.stat-plus { color: var(--accent); }
 .stat-bar {
   display: block;
-  width: 32px;
+  width: 40px;
   height: 2px;
   background: linear-gradient(90deg, var(--accent), transparent);
-  border-radius: 1px;
-  box-shadow: 0 0 6px var(--accent-dim);
 }
-
 .stat-label {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 400;
+  font-size: clamp(0.75rem, 1vw, 0.9rem);
   color: var(--text-muted);
   line-height: 1.4;
-  max-width: 150px;
+  max-width: 180px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
-
-.hero-photo {
-  flex-shrink: 0;
-}
-
+.hero-photo { flex-shrink: 0; }
 .photo-avatar {
-  width: 350px;
-  height: 350px;
+  width: clamp(260px, 22vw, 380px);
+  height: clamp(260px, 22vw, 380px);
   border-radius: 50%;
-  border: 2px solid rgba(0, 240, 255, 0.2);
+  border: 2px solid rgba(194, 254, 12, 0.2);
   object-fit: cover;
   display: block;
-  box-shadow: 0 0 30px rgba(0, 240, 255, 0.08), 0 0 60px rgba(255, 45, 149, 0.04);
 }
-
 .hero-social {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
 }
-
 .social-link {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   border: 1px solid var(--border-default);
   color: var(--text-muted);
   background: var(--bg-card);
-  transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition: color 0.2s, border-color 0.2s, transform 0.2s;
   text-decoration: none;
 }
-
 .social-link:hover {
   color: var(--accent);
-  border-color: rgba(0, 240, 255, 0.4);
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.15);
+  border-color: var(--accent);
   transform: translateY(-2px);
 }
+.social-icon { width: 20px; height: 20px; }
 
-.social-icon {
-  width: 18px;
-  height: 18px;
-}
-
-/* ───────── SECTIONS ───────── */
-.section {
-  padding: 5rem 3rem;
-  max-width: 1100px;
+/* ═══ PROJECT — FEATURED (split) ═══ */
+.project-split {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
   width: 100%;
-  margin: 0 auto;
+  height: 100%;
 }
-
-.section--wide {
+.project-split--featured {
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+}
+.project-split__media {
+  flex-shrink: 0;
+  width: 48%;
+  max-width: 720px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+.project-split--featured .project-split__media {
+  width: 70%;
+  max-width: 900px;
+}
+.project-split__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.project-split--featured .project-split__body {
+  width: 100%;
   max-width: 1200px;
 }
 
-.section-header {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  margin-bottom: 2.5rem;
-}
-
-.section-header--center {
-  justify-content: center;
-}
-
-.section-title {
-  font-family: var(--font-pixel);
-  font-size: 0.95rem;
-  font-weight: 400;
-  color: var(--text-primary);
-  letter-spacing: 0.04em;
-  text-shadow: 0 0 14px var(--accent-dim);
-}
-
-.section-note {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* ───────── BUTTONS ───────── */
-.btn {
-  font-family: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.55rem 1.3rem;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.15s;
-  letter-spacing: 0.02em;
-}
-
-.btn-primary {
-  background: var(--accent);
-  color: #0e0e12;
-}
-
-.btn-primary:hover {
-  background: var(--accent-hover);
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-default);
-}
-
-.btn-ghost:hover {
-  color: var(--text-primary);
-  border-color: var(--text-muted);
-  background: var(--bg-hover);
-}
-
-/* ───────── CARD (shared) ───────── */
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  overflow: hidden;
-  transition: border-color 0.2s, transform 0.2s;
-}
-
-.card:hover {
-  border-color: var(--border-default);
-  transform: translateY(-2px);
-}
-
-.card-media {
-  width: 100%;
-}
-
-.card-body {
-  padding: 1rem 1.25rem;
-}
-
-.card-body--lg {
-  padding: 1.25rem 1.5rem 1.5rem;
-}
-
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 0.2rem;
-}
-
-.card-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.card-title--lg {
-  font-family: var(--font-pixel);
-  font-size: 0.95rem;
-  font-weight: 400;
-  text-shadow: 0 0 10px var(--accent-dim);
-}
-
-.card-hours {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.card-genre {
-  font-size: 0.75rem;
-  color: var(--accent);
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.card-desc {
-  font-size: 0.88rem;
-  color: var(--text-secondary);
-  line-height: 1.65;
-  margin-bottom: 0.85rem;
-}
-
-.card-desc--lg {
-  font-size: 0.95rem;
-  margin-bottom: 1.25rem;
-}
-
-.card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.tag {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  font-weight: 400;
-  color: var(--text-muted);
-  background: var(--bg-elevated);
-  padding: 0.2rem 0.55rem;
-  border-radius: 3px;
-  border: 1px solid var(--border-subtle);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.tag--sm {
-  font-size: 0.62rem;
-  padding: 0.15rem 0.45rem;
-}
-
-.card-tech-detail {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  line-height: 1.55;
-  margin-bottom: 0.75rem;
-  font-style: italic;
-}
-
-.card-frameworks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.5rem;
-}
-
-.tag--fw {
-  border-color: rgba(180, 77, 255, 0.15);
-  color: var(--neon-purple);
-}
-
-.btn--expand {
-  margin-top: 1rem;
-  font-size: 0.75rem;
-  padding: 0.35rem 0.85rem;
-}
-
-.highlights-list {
-  margin-top: 0.75rem;
-  padding-left: 1.1rem;
-  list-style: none;
+/* ═══ PROJECT — SECONDARY ROW ═══ */
+.projects-row {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 3rem;
+  width: 100%;
+}
+.project-card {
+  display: flex;
+  align-items: center;
+  gap: 3.5rem;
+  width: 100%;
+}
+.project-card__media {
+  flex-shrink: 0;
+  width: 42%;
+  max-width: 600px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--bg-card);
+  transition: border-color 0.2s;
+}
+.project-card__media:hover { border-color: var(--border-default); }
+.project-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
 }
 
-.highlights-list li {
-  font-size: 0.78rem;
+/* ═══ PROJECT — SHARED CONTENT ═══ */
+.project-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+}
+.project-name {
+  font-family: var(--font-pixel);
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
   color: var(--text-secondary);
-  line-height: 1.5;
-  position: relative;
-  padding-left: 0.8rem;
+  line-height: 1.3;
+}
+.project-name--sm {
+  font-size: clamp(1rem, 1.8vw, 1.4rem);
+}
+.project-hours {
+  font-family: var(--font-mono);
+  font-size: clamp(0.8rem, 1vw, 0.95rem);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.project-genre {
+  font-family: var(--font-mono);
+  font-size: clamp(0.85rem, 1.1vw, 1rem);
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  margin-bottom: 1.25rem;
+}
+.project-desc {
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  color: var(--text-muted);
+  line-height: 1.75;
+  margin-bottom: 1.5rem;
 }
 
+/* ═══ CHIPS ═══ */
+.project-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.chip {
+  font-family: var(--font-mono);
+  font-size: clamp(0.8rem, 1vw, 0.9rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.5rem 1.1rem;
+  border-radius: 3px;
+}
+.chip--tech {
+  background: var(--bg-chip);
+  color: #ffffff;
+  border: none;
+}
+.chip--sm {
+  font-size: clamp(0.72rem, 0.9vw, 0.82rem);
+  padding: 0.35rem 0.8rem;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ═══ EXPAND BUTTON ═══ */
+.btn-expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: clamp(0.85rem, 1vw, 0.95rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.2rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: 1rem;
+}
+.btn-expand:hover { color: var(--accent); border-color: var(--accent); }
+.btn-expand__icon { font-size: 0.9rem; }
+.btn-expand__count {
+  background: var(--bg-chip);
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 2px;
+}
+
+/* ═══ HIGHLIGHTS ═══ */
+.highlights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.highlights-list li {
+  font-size: clamp(0.95rem, 1.15vw, 1.05rem);
+  color: var(--text-muted);
+  line-height: 1.65;
+  padding-left: 1.3rem;
+  position: relative;
+}
 .highlights-list li::before {
   content: '>';
   font-family: var(--font-pixel);
@@ -737,148 +639,134 @@ useScrollReveal(appShell)
   left: 0;
   color: var(--accent);
   font-size: 0.4rem;
-  top: 0.25em;
-  text-shadow: 0 0 4px var(--accent-dim);
+  top: 0.38em;
 }
-
-/* ───────── PRIMARY CARD (split layout) ───────── */
-.card-primary {
-  border-color: rgba(0, 240, 255, 0.1);
-  margin-bottom: 1rem;
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.03);
-}
-
-.card-primary--split {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  overflow: hidden;
-}
-
-.card-media--split {
-  min-height: 100%;
-}
-
-.card-body--split {
-  padding: 2rem 2.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.card-primary:hover {
-  border-color: rgba(0, 240, 255, 0.25);
-  box-shadow: 0 0 30px rgba(0, 240, 255, 0.06);
-}
-
-/* ───────── SECONDARY GRID ───────── */
-.grid-secondary {
+.highlights-list--2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
+  column-gap: 2.5rem;
+  row-gap: 0.55rem;
+}
+@media (max-width: 900px) {
+  .highlights-list--2col {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* ───────── COURSES ───────── */
-.grid-courses {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
+/* ═══ COURSES ═══ */
+.grid-courses { display: flex; flex-direction: column; gap: 1.25rem; }
 .course-card {
-  padding: 1.5rem 2rem;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  border-radius: 4px;
   transition: border-color 0.15s;
+  overflow: hidden;
 }
-
-.course-card:hover {
-  border-color: var(--border-default);
-}
-
+.course-card:hover { border-color: var(--border-default); }
 .course-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 0.75rem;
+  padding: 1.5rem 2rem;
+  cursor: pointer;
+  transition: background 0.15s;
 }
-
+.course-header:hover { background: var(--bg-hover); }
 .course-header-text {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
-
+.course-expand-icon {
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 14px solid var(--accent);
+  transition: transform 0.25s ease;
+}
+.course-expand-icon--open {
+  transform: rotate(90deg);
+}
 .course-title {
-  font-size: 1.05rem;
+  font-size: clamp(1rem, 1.3vw, 1.2rem);
   font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.2rem;
+  color: var(--text-secondary);
+  margin: 0;
 }
-
 .course-author {
-  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   color: var(--text-muted);
-  font-weight: 500;
+  display: block;
+  margin-top: 0.25rem;
 }
-
+.course-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+.course-collapse--open {
+  grid-template-rows: 1fr;
+}
+.course-content {
+  overflow: hidden;
+  padding: 0 2rem;
+  border-top: 1px solid transparent;
+  transition: padding 0.35s ease, border-color 0.35s ease;
+}
+.course-collapse--open .course-content {
+  padding: 0 2rem 1.5rem;
+  border-top-color: var(--border-subtle);
+}
 .udemy-badge {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.35rem 0.7rem;
+  padding: 0.5rem 1rem;
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
-  border-radius: 4px;
+  border-radius: 3px;
   text-decoration: none;
   flex-shrink: 0;
   transition: border-color 0.15s, background 0.15s;
 }
-
 .udemy-badge:hover {
-  border-color: var(--border-default);
-  background: var(--bg-hover);
+  border-color: var(--accent);
+  background: var(--bg-card);
 }
-
-.udemy-icon {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-}
-
+.udemy-icon { width: 20px; height: 20px; object-fit: contain; }
 .udemy-label {
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
   color: var(--text-secondary);
   white-space: nowrap;
 }
-
 .course-overview {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 0.75rem;
+  font-size: clamp(0.9rem, 1.1vw, 1rem);
+  color: var(--text-muted);
+  line-height: 1.65;
+  margin: 1rem 0;
 }
-
 .course-learned {
   list-style: none;
   padding: 0;
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.4rem;
 }
-
 .course-learned li {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--text-muted);
-  line-height: 1.45;
+  line-height: 1.5;
   position: relative;
-  padding-left: 0.85rem;
+  padding-left: 1rem;
 }
-
 .course-learned li::before {
   content: '>';
   font-family: var(--font-pixel);
@@ -886,216 +774,185 @@ useScrollReveal(appShell)
   left: 0;
   color: var(--accent);
   font-size: 0.4rem;
-  top: 0.2em;
-  text-shadow: 0 0 4px var(--accent-dim);
+  top: 0.35em;
 }
-
 .course-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  margin-top: 1rem;
 }
-
-.course-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.btn--sm {
-  font-size: 0.7rem;
-  padding: 0.3rem 0.7rem;
+.course-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-default);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 3px;
   text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: color 0.15s, border-color 0.15s;
 }
-
-.btn-subtle {
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
-}
-
-.btn-subtle:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
+.btn-ghost:hover { color: var(--accent); border-color: var(--accent); }
 .courses-placeholder {
-  padding: 2rem;
+  padding: 3rem;
   background: var(--bg-card);
   border: 1px dashed var(--border-default);
-  border-radius: 6px;
+  border-radius: 4px;
   text-align: center;
-}
-
-.courses-placeholder p {
-  font-size: 0.85rem;
   color: var(--text-muted);
+  font-size: 1rem;
 }
 
-/* ───────── SKILLS ───────── */
-.skills-grid {
+/* ═══ SKILLS ═══ */
+.skills-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
 }
-
+@media (max-width: 1200px) {
+  .skills-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .skills-row {
+    grid-template-columns: 1fr;
+  }
+}
 .skill-group {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  padding: 1.5rem 2rem;
+  border-radius: 4px;
+  padding: 2rem 2.5rem;
 }
-
 .skill-category {
   font-family: var(--font-pixel);
-  font-size: 0.5rem;
-  font-weight: 400;
-  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--neon-purple);
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-subtle);
-  text-shadow: 0 0 8px var(--neon-purple-dim);
+  color: #ffffff;
+  background: var(--bg-chip);
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  margin-bottom: 1.5rem;
 }
-
-.skill-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.skill-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.skill-info {
-  flex: 1;
-  min-width: 0;
-}
-
+.skill-list { display: flex; flex-direction: column; gap: 1.4rem; }
+.skill-row { display: flex; align-items: center; gap: 1.25rem; }
+.skill-info { flex: 1; min-width: 0; }
 .skill-name {
   display: block;
-  font-size: 0.88rem;
+  font-size: clamp(1.05rem, 1.3vw, 1.2rem);
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   line-height: 1.3;
 }
-
 .skill-note {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
   line-height: 1.4;
-  margin-top: 0.1rem;
+  margin-top: 0.2rem;
 }
-
 .skill-meter {
   flex-shrink: 0;
-  width: 130px;
+  width: 160px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 0.3rem;
+  align-items: flex-start;
+  gap: 0.4rem;
 }
-
 .skill-track {
   width: 100%;
-  height: 4px;
+  display: flex;
+  gap: 4px;
+}
+.skill-segment {
+  flex: 1;
+  height: 10px;
   background: var(--bg-elevated);
-  border-radius: 2px;
-  overflow: hidden;
+  border: 1px solid var(--border-subtle);
 }
-
-.skill-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.4s ease;
+.skill-segment--active {
+  border-color: transparent;
 }
-
-.skill-fill--1 {
-  background: var(--text-muted);
-}
-
-.skill-fill--2 {
-  background: linear-gradient(90deg, var(--accent-dim), var(--accent));
-  box-shadow: 0 0 6px var(--accent-dim);
-}
-
-.skill-fill--3 {
-  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
-  box-shadow: 0 0 8px var(--accent-dim);
-}
-
-.skill-fill--4 {
-  background: linear-gradient(90deg, var(--warm), #ff6eb4);
-  box-shadow: 0 0 8px var(--warm-dim);
-}
-
+.skill-segment--1 { background: var(--text-muted); box-shadow: 0 0 4px rgba(142,142,142,0.3); }
+.skill-segment--2 { background: var(--accent); box-shadow: 0 0 6px rgba(194,254,12,0.3); }
+.skill-segment--3 { background: var(--accent); box-shadow: 0 0 8px rgba(194,254,12,0.4); }
+.skill-segment--4 { background: var(--neon-purple); box-shadow: 0 0 10px rgba(82,0,255,0.5); }
 .skill-label {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
-  font-weight: 400;
-  letter-spacing: 0.04em;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
+.skill-label--1 { color: var(--text-muted); }
+.skill-label--2 { color: var(--text-secondary); }
+.skill-label--3 { color: var(--accent); }
+.skill-label--4 { color: var(--neon-purple); }
 
-.skill-label--1 {
-  color: var(--text-muted);
-}
-
-.skill-label--2 {
-  color: var(--text-secondary);
-}
-
-.skill-label--3 {
-  color: var(--accent);
-}
-
-.skill-label--4 {
-  color: var(--warm);
-}
-
-/* ───────── FOOTER ───────── */
+/* ═══ FOOTER ═══ */
 .footer {
-  margin-top: auto;
-  padding: 2rem;
+  padding: 2.5rem;
   border-top: 1px solid var(--border-subtle);
   text-align: center;
 }
-
 .footer-text {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
-/* ───────── SCROLL REVEAL ANIMATIONS ───────── */
-.reveal {
-  opacity: 0;
-  transition: opacity 0.7s ease, transform 0.7s ease;
+/* ═══ SCROLL REVEAL ═══ */
+.reveal { 
+  opacity: 0; 
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 1.2s cubic-bezier(0.16, 1, 0.3, 1); 
+}
+.reveal--up { transform: translateY(60px); }
+.reveal--left { transform: translateX(-60px); }
+.reveal--right { transform: translateX(60px); }
+.reveal.revealed { 
+  opacity: 1; 
+  transform: translate(0, 0); 
 }
 
-.reveal--up {
-  transform: translateY(40px);
+/* Stagger animations for child elements */
+.reveal.revealed .project-split__media,
+.reveal.revealed .project-card__media {
+  animation: fadeInScale 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
 }
 
-.reveal--left {
-  transform: translateX(-40px);
+.reveal.revealed .project-split__body,
+.reveal.revealed .project-card__body {
+  animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;
 }
 
-.reveal--right {
-  transform: translateX(40px);
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.reveal.revealed {
-  opacity: 1;
-  transform: translate(0, 0);
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
