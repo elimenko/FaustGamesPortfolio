@@ -194,7 +194,7 @@ export const courses = [
 // Levels: 1 = Basic, 2 = Proficient, 3 = Advanced, 4 = Expert
 export const skills = [
   {
-    category: 'Core Engine',
+    category: 'Unreal Engine Core',
     items: [
       { name: 'C++ in Unreal Engine', level: 3, note: '800+ hrs in primary project, 5 completed courses' },
       { name: 'Blueprints', level: 3, note: 'Used across all projects; hybrid C++/BP workflows' },
@@ -202,7 +202,7 @@ export const skills = [
     ],
   },
   {
-    category: 'Gameplay Systems',
+    category: 'UE Gameplay Systems',
     items: [
       { name: 'Gameplay Ability System (GAS)', level: 3, note: 'Dedicated course + full migration of combat systems in Sinistrum' },
       { name: 'Multiplayer & Networking', level: 3, note: 'All projects multiplayer-ready; 2 dedicated networking courses; EOS & Steam' },
@@ -212,7 +212,7 @@ export const skills = [
     ],
   },
   {
-    category: 'Tools & Integrations',
+    category: 'UE Tools & Integration',
     items: [
       { name: 'EOS / Steam Online Subsystem', level: 2, note: 'Full integration in Sinistrum + course coverage' },
       { name: 'PCG (Procedural Content Generation)', level: 2, note: 'Used in Sinistrum for procedural level content' },
@@ -225,10 +225,10 @@ export const skills = [
   {
     category: 'General Engineering',
     items: [
-      { name: 'Software Architecture', level: 2, note: '4+ years of professional architecture experience' },
       { name: 'Object-Oriented Design', level: 4, note: '10+ years of software engineering' },
-      { name: 'Version Control (Git / Perforce)', level: 4, note: 'Used across all projects' },
       { name: 'Problem Solving & Debugging', level: 4, note: 'Core strength from decade of engineering' },
+      { name: 'Version Control (Git)', level: 4, note: 'Used across all projects' },
+      { name: 'Software Architecture', level: 2, note: '4+ years of professional architecture experience' },
     ],
   },
 ]

@@ -80,11 +80,10 @@ useScrollReveal(appShell)
     <section id="hero" class="screen hero">
       <div class="hero-inner">
         <div class="hero-text">
-          <p class="hero-eyebrow">SOFTWARE ENGINEER · TEAM LEAD · ARCHITECT</p>
           <h1 class="hero-title">Faust<br/><span class="hero-title-accent">Games</span></h1>
           <p class="hero-subtitle">
             Hi, I'm <span class="hero-name">Egor</span> — aka <span class="hero-name">Faust</span>.
-            Over a decade of enterprise software experience, and a burning passion for game development —
+            Software Engineer, Team Lead, and Architect with over a decade of enterprise experience, and a burning passion for game development —
             spending the last 3 years mastering Unreal Engine 5 and building original projects.
           </p>
           <ul class="hero-bullets">
@@ -144,10 +143,7 @@ useScrollReveal(appShell)
             <MediaCarousel :media="primaryProject.media" :project-id="primaryProject.id" />
           </div>
           <div class="project-split__body">
-            <div class="project-header">
-              <h2 class="project-name">{{ primaryProject.name }}</h2>
-              <span class="project-hours">{{ primaryProject.timeSpent }} hrs</span>
-            </div>
+            <h2 class="project-name">{{ primaryProject.name }}</h2>
             <p class="project-genre">{{ primaryProject.genre }} · {{ primaryProject.perspective }}</p>
             <p class="project-desc">{{ primaryProject.description }}</p>
             <div class="project-chips">
@@ -174,10 +170,7 @@ useScrollReveal(appShell)
               <MediaCarousel :media="project.media" :project-id="project.id" />
             </div>
             <div class="project-card__body">
-              <div class="project-header">
-                <h3 class="project-name project-name--sm">{{ project.name }}</h3>
-                <span class="project-hours">{{ project.timeSpent }} hrs</span>
-              </div>
+              <h3 class="project-name">{{ project.name }}</h3>
               <p class="project-genre">{{ project.genre }} · {{ project.perspective }}</p>
               <p class="project-desc">{{ project.description }}</p>
               <div class="project-chips">
@@ -385,13 +378,15 @@ useScrollReveal(appShell)
   position: relative;
 }
 .hero-bullets li::before {
-  content: '>';
-  font-family: var(--font-pixel);
+  content: '';
   position: absolute;
   left: 0;
-  color: var(--accent);
-  font-size: 0.45rem;
-  top: 0.38em;
+  top: 0.5em;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid var(--accent);
 }
 .hero-stats { display: flex; gap: 3rem; }
 .stat { display: flex; flex-direction: column; gap: 0.4rem; }
@@ -633,13 +628,15 @@ useScrollReveal(appShell)
   position: relative;
 }
 .highlights-list li::before {
-  content: '>';
-  font-family: var(--font-pixel);
+  content: '';
   position: absolute;
   left: 0;
-  color: var(--accent);
-  font-size: 0.4rem;
-  top: 0.38em;
+  top: 0.5em;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid var(--accent);
 }
 .highlights-list--2col {
   display: grid;
@@ -768,13 +765,15 @@ useScrollReveal(appShell)
   padding-left: 1rem;
 }
 .course-learned li::before {
-  content: '>';
-  font-family: var(--font-pixel);
+  content: '';
   position: absolute;
   left: 0;
-  color: var(--accent);
-  font-size: 0.4rem;
-  top: 0.35em;
+  top: 0.5em;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid var(--accent);
 }
 .course-footer {
   display: flex;
