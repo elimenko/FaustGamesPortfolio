@@ -23,6 +23,7 @@ export const projects = [
       'Network-replicated spaceship movement',
       'Replicated custom gravity system',
       'Replicated power grid system',
+      'Positional voice chat & walkie-talkie',
       'Dynamic goals system (team & personal)',
       'Inventory Framework via GAS',
       'Modular equipment system',
