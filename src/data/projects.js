@@ -95,7 +95,9 @@ export const projects = [
       'Landscape generation using heightmaps',
     ],
     frameworks: [],
-    media: [],
+    media: [
+      { type: 'video', src: '/media/sin-cleaners/SinCleanersWeatherSystem.mp4', alt: 'SinCleaners — Weather System' },
+    ],
   },
 ]
 
