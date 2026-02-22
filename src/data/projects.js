@@ -91,7 +91,7 @@ export const projects = [
       'C++ handles core logic and complex networked flows. Blueprints are used primarily for animations.',
     highlights: [
       'AI logic for pathfinding and obstacle destruction',
-      'Custom day/night cycle system',
+      'Weather system with day/night cycle',
       'Landscape generation using heightmaps',
     ],
     frameworks: [],
