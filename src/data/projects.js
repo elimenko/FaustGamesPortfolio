@@ -81,7 +81,7 @@ export const projects = [
     perspective: 'First Person',
     timeSpent: '100+',
     description:
-      'Play as medieval monks in a dark fantasy setting — tend to your parishioners by day and fight unholy forces by night. Build, pray, survive.',
+      'Play as medieval monks in a fantasy setting — tend to your parishioners by day and fight unholy forces by night. Build, pray, survive.',
     technologies: [
       'Unreal Engine 5',
       'C++',
