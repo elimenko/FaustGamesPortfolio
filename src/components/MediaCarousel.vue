@@ -19,6 +19,25 @@ const hasMedia = computed(() => props.media.length > 0)
 const total = computed(() => props.media.length)
 const current = computed(() => props.media[currentIndex.value])
 
+// Extract YouTube video ID from URL
+function getYouTubeId(url) {
+  if (!url) return null
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+  const match = url.match(regExp)
+  return (match && match[2].length === 11) ? match[2] : null
+}
+
+// Check if current item is a YouTube video
+const isYouTube = computed(() => {
+  if (!current.value) return false
+  return current.value.type === 'youtube' || (current.value.src && getYouTubeId(current.value.src))
+})
+
+const youtubeId = computed(() => {
+  if (!current.value) return null
+  return getYouTubeId(current.value.src)
+})
+
 function openLightbox() {
   lightboxOpen.value = true
   document.addEventListener('keydown', onKey)
@@ -68,6 +87,16 @@ function goTo(index) {
             :alt="current.alt || projectId"
             class="carousel-img"
           />
+          <iframe
+            v-else-if="isYouTube"
+            :src="`https://www.youtube.com/embed/${youtubeId}?rel=0`"
+            :title="current.alt || projectId"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            class="carousel-video"
+            @click.stop
+          />
           <video
             v-else-if="current.type === 'video'"
             :src="current.src"
@@ -76,7 +105,7 @@ function goTo(index) {
             class="carousel-video"
             @click.stop
           />
-          <span class="carousel-expand" title="Expand">⛶</span>
+          <span v-if="!isYouTube" class="carousel-expand" title="Expand">⛶</span>
         </div>
 
         <button v-if="total > 1" class="carousel-btn carousel-btn--prev" @click="prev" aria-label="Previous">
@@ -118,6 +147,15 @@ function goTo(index) {
               :src="current.src"
               :alt="current.alt || projectId"
               class="lb-img"
+            />
+            <iframe
+              v-else-if="isYouTube"
+              :src="`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`"
+              :title="current.alt || projectId"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              class="lb-video"
             />
             <video
               v-else-if="current.type === 'video'"

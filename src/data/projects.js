@@ -41,6 +41,7 @@ export const projects = [
       'EOS / Steam Online Subsystem',
     ],
     media: [
+      { type: 'youtube', src: 'https://www.youtube.com/watch?v=dWQkyC-yfpg', alt: 'Project trailer' },
       { type: 'image', src: '/media/sinistrum/screenshot1.png', alt: 'Ritual site' },
       { type: 'image', src: '/media/sinistrum/screenshot2.png', alt: 'Inventory' },
       { type: 'image', src: '/media/sinistrum/screenshot3.png', alt: 'Possession' },
